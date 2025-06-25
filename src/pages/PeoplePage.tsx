@@ -2,7 +2,7 @@ import { PeopleFilters } from '../components/PeopleFilters';
 import { Loader } from '../components/Loader';
 import { PeopleTable } from '../components/PeopleTable';
 import { Person } from '../types';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getPeople } from '../api';
 import { useSearchParams } from 'react-router-dom';
 import { getPreparedPeople } from '../utils/getPreparedPeople';
@@ -23,7 +23,15 @@ export const PeoplePage = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const visiblePeople = getPreparedPeople(people, searchParams);
+  const visiblePeople = useMemo(
+    () => getPreparedPeople(people, searchParams),
+    [people, searchParams],
+  );
+
+  const hasError = !loading && error;
+  const hasNoPeopleOnServer = !loading && !error && !people.length;
+  const hasNoMatchingPeople = !loading && !error && !visiblePeople.length;
+  const isTableVisible = !loading && !error && visiblePeople.length;
 
   return (
     <>
@@ -42,19 +50,19 @@ export const PeoplePage = () => {
             <div className="box table-container">
               {loading && <Loader />}
 
-              {!loading && error && <p data-cy="peopleLoadingError">{error}</p>}
+              {hasError && <p data-cy="peopleLoadingError">{error}</p>}
 
-              {!loading && !error && !people.length && (
+              {hasNoPeopleOnServer && (
                 <p data-cy="noPeopleMessage">
                   There are no people on the server
                 </p>
               )}
 
-              {!loading && !error && !visiblePeople.length && (
+              {hasNoMatchingPeople && (
                 <p>There are no people matching the current search criteria</p>
               )}
 
-              {!loading && !error && visiblePeople.length && (
+              {isTableVisible && (
                 <PeopleTable
                   people={visiblePeople}
                   searchParams={searchParams}
