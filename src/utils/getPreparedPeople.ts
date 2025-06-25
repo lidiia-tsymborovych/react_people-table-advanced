@@ -11,7 +11,7 @@ export const getPreparedPeople = (
   const column = filters.get('sort') as SortableKey | null;
   const order = filters.get('order') || '';
 
-  if (!query && !sex && !centuries) {
+  if (!query && !sex && !centuries.length) {
     return people;
   }
 
