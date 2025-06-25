@@ -1,10 +1,11 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Person } from '../types';
-import { getSearchWith } from '../utils/searchHelper';
+import { SearchParams } from '../utils/searchHelper';
 import cn from 'classnames';
 import { PersonLink } from './PersonLink';
+import { SearchLink } from './SearchLink';
 
 type Props = {
   people: Person[];
@@ -18,24 +19,26 @@ const COLUMNS = [
   { key: 'died', label: 'Died' },
 ] as const;
 
+type SortKey = (typeof COLUMNS)[number]['key'];
+
 export const PeopleTable = ({ people, searchParams }: Props) => {
   const { personSlug } = useParams();
 
   const currentSort = searchParams.get('sort');
   const currentOrder = searchParams.get('order');
 
-  const getSortLink = (key: string) => {
+  const getSortParams = (key: SortKey): SearchParams => {
     const isSameColumn = currentSort === key;
 
     if (!isSameColumn) {
-      return getSearchWith(searchParams, { sort: key });
+      return { sort: key };
     }
 
     if (isSameColumn && !currentOrder) {
-      return getSearchWith(searchParams, { sort: key, order: 'desc' });
+      return { sort: key, order: 'desc' };
     }
 
-    return getSearchWith(searchParams, { sort: null, order: null });
+    return { sort: null, order: null };
   };
 
   return (
@@ -53,7 +56,7 @@ export const PeopleTable = ({ people, searchParams }: Props) => {
               <th key={key}>
                 <span className="is-flex is-flex-wrap-nowrap">
                   {label}
-                  <Link to={`?${getSortLink(key)}`}>
+                  <SearchLink params={getSortParams(key)}>
                     <span className="icon">
                       <i
                         className={cn('fas', {
@@ -63,7 +66,7 @@ export const PeopleTable = ({ people, searchParams }: Props) => {
                         })}
                       />
                     </span>
-                  </Link>
+                  </SearchLink>
                 </span>
               </th>
             );
